@@ -1,0 +1,130 @@
+﻿@page "/"
+@inject HttpClient Http
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>Mijn Profiel</PageTitle>
+
+<div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 24px;">👤 Mijn Profiel</h3>
+
+    @if (_laden)
+    {
+        <p style="color: #999;">Laden...</p>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label>Voornaam:</label>
+            <input type="text" class="form-control" placeholder="Voornaam" @bind="_voornaam" />
+        </div>
+
+        <div class="mb-3">
+            <label>Naam:</label>
+            <input type="text" class="form-control" placeholder="Naam" @bind="_naam" />
+        </div>
+
+        <div class="mb-3">
+            <label>Geboortedatum:</label>
+            <input type="text" class="form-control" @bind="_geboortedatum" />
+        </div>
+
+        <div class="mb-3">
+            <label>Positie:</label>
+            <select class="form-control" @bind="_positie">
+                <option value="">-- Kies een positie --</option>
+                <option value="Doelman">Doelman</option>
+                <option value="Verdediger">Verdediger</option>
+                <option value="Middenvelder">Middenvelder</option>
+                <option value="Aanvaller">Aanvaller</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Rugnummer:</label>
+            <input type="number" class="form-control" min="1" max="99" @bind="_rugnummer" />
+        </div>
+
+        <div class="mb-3">
+            <label>Team:</label>
+            <input type="text" class="form-control" placeholder="Naam van je team" @bind="_team" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="OpslaanProfiel">Opslaan</button>
+    }
+</div>
+
+@code {
+    private bool _laden = true;
+    private string _voornaam = "";
+    private string _naam = "";
+    private string? _geboortedatum;
+    private string _positie = "";
+    private int _rugnummer = 1;
+    private string? _team;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LaadProfiel();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LaadProfiel()
+    {
+        _laden = true;
+        var speler = await Http.GetFromJsonAsync<SpelerDto>("api/Speler");
+        if (speler is not null)
+        {
+            _voornaam = speler.Voornaam;
+            _naam = speler.Naam;
+            _geboortedatum = speler.Geboortedatum;
+            _positie = speler.Positie;
+            _rugnummer = speler.Rugnummer;
+            _team = speler.Team;
+        }
+        _laden = false;
+    }
+
+    private async Task OpslaanProfiel()
+    {
+        var dto = new SpelerDto
+        {
+            Voornaam = _voornaam,
+            Naam = _naam,
+            Geboortedatum = _geboortedatum,
+            Positie = _positie,
+            Rugnummer = _rugnummer,
+            Team = _team
+        };
+
+        var response = await Http.PostAsJsonAsync("api/Speler", dto);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await JS.InvokeVoidAsync("alert", "Profiel opgeslagen!");
+        }
+        else
+        {
+            var fout = await response.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"Fout: {fout}");
+        }
+    }
+
+    public class SpelerDto
+    {
+        public int Id { get; set; }
+        public string Naam { get; set; } = string.Empty;
+        public string Voornaam { get; set; } = string.Empty;
+        public string? Geboortedatum { get; set; }
+        public string Positie { get; set; } = string.Empty;
+        public int Rugnummer { get; set; }
+        public string? Team { get; set; }
+    }
+}
+
+
+
+

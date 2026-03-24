@@ -1,0 +1,82 @@
+﻿@page "/wedstrijd"
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+<PageTitle>Wedstrijden</PageTitle>
+
+<div style="max-width: 1000px; margin: 0 auto; padding: 40px 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #e0e0e0;">
+        <h3 style="font-size: 32px; font-weight: bold; margin: 0;">Mijn Wedstrijden 🏆</h3>
+        <a href="/wedstrijd/toevoegen" style="padding: 12px 24px; background: linear-gradient(135deg, #43a047 0%, #1b5e20 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">+ Wedstrijd toevoegen</a>
+    </div>
+
+    @if (_wedstrijden == null)
+    {
+        <p style="text-align: center; padding: 60px 20px; color: #999;">Laden...</p>
+    }
+    else if (!_wedstrijden.Any())
+    {
+        <p style="text-align: center; padding: 60px 20px; color: #999;">Nog geen wedstrijden gevonden. Voeg je eerste wedstrijd toe!</p>
+    }
+    else
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+            @foreach (var w in _wedstrijden)
+            {
+                <div style="padding: 24px; background: white; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 13px; color: #888;">@w.Datum</span>
+                        @if (!string.IsNullOrEmpty(w.Competitie))
+                        {
+                            <span style="font-size: 12px; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 12px;">@w.Competitie</span>
+                        }
+                    </div>
+                    <h4 style="font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">
+                        @w.ThuisTeam @w.ThuisScore – @w.UitScore @w.UitTeam
+                    </h4>
+                    <p style="color: #555; font-size: 14px; margin-bottom: 8px;">
+                        @(w.IsThuis ? "🏠 Thuis" : "✈️ Uit")
+                    </p>
+                    <div style="display: flex; gap: 12px; font-size: 14px; color: #444;">
+                        <span>⚽ @w.Goals goals</span>
+                        <span>🎯 @w.Assists assists</span>
+                        <span>⭐ @w.Rating.ToString("F1")</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<WedstrijdDto>? _wedstrijden;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LaadWedstrijden();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LaadWedstrijden()
+    {
+        _wedstrijden = await Http.GetFromJsonAsync<List<WedstrijdDto>>("api/Wedstrijd");
+    }
+
+    public class WedstrijdDto
+    {
+        public int Id { get; set; }
+        public string Datum { get; set; } = string.Empty;
+        public string ThuisTeam { get; set; } = string.Empty;
+        public string UitTeam { get; set; } = string.Empty;
+        public int ThuisScore { get; set; }
+        public int UitScore { get; set; }
+        public bool IsThuis { get; set; }
+        public string? Competitie { get; set; }
+        public int Goals { get; set; }
+        public int Assists { get; set; }
+        public decimal Rating { get; set; }
+    }
+}
