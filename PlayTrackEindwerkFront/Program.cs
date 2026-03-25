@@ -1,4 +1,5 @@
 using PlayTrackEindwerkFront.Components;
+using PlayTrackEindwerk.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped(sp => new HttpClient {
@@ -26,5 +27,6 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
 
 app.Run();

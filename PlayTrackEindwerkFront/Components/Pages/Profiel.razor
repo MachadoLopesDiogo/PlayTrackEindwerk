@@ -12,6 +12,10 @@
     {
         <p style="color: #999;">Laden...</p>
     }
+    else if (_foutmelding is not null)
+    {
+        <p style="color: red;">⚠️ @_foutmelding</p>
+    }
     else
     {
         <div class="mb-3">
@@ -56,6 +60,7 @@
 
 @code {
     private bool _laden = true;
+    private string? _foutmelding;
     private string _voornaam = "";
     private string _naam = "";
     private string? _geboortedatum;
@@ -63,29 +68,38 @@
     private int _rugnummer = 1;
     private string? _team;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    // ✅ Gebruik OnInitializedAsync i.p.v. OnAfterRenderAsync
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            await LaadProfiel();
-            StateHasChanged();
-        }
+        await LaadProfiel();
     }
 
     private async Task LaadProfiel()
     {
         _laden = true;
-        var speler = await Http.GetFromJsonAsync<SpelerDto>("api/Speler");
-        if (speler is not null)
+        _foutmelding = null;
+        try
         {
-            _voornaam = speler.Voornaam;
-            _naam = speler.Naam;
-            _geboortedatum = speler.Geboortedatum;
-            _positie = speler.Positie;
-            _rugnummer = speler.Rugnummer;
-            _team = speler.Team;
+            var speler = await Http.GetFromJsonAsync<SpelerDto>("api/Speler");
+            if (speler is not null)
+            {
+                _voornaam = speler.Voornaam;
+                _naam = speler.Naam;
+                _geboortedatum = speler.Geboortedatum;
+                _positie = speler.Positie;
+                _rugnummer = speler.Rugnummer;
+                _team = speler.Team;
+            }
         }
-        _laden = false;
+        catch (Exception ex)
+        {
+            // ✅ Fout opvangen zodat de pagina niet crasht
+            _foutmelding = $"Kon profiel niet laden: {ex.Message}";
+        }
+        finally
+        {
+            _laden = false;
+        }
     }
 
     private async Task OpslaanProfiel()
@@ -100,16 +114,22 @@
             Team = _team
         };
 
-        var response = await Http.PostAsJsonAsync("api/Speler", dto);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            await JS.InvokeVoidAsync("alert", "Profiel opgeslagen!");
+            var response = await Http.PostAsJsonAsync("api/Speler", dto);
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "Profiel opgeslagen!");
+            }
+            else
+            {
+                var fout = await response.Content.ReadAsStringAsync();
+                await JS.InvokeVoidAsync("alert", $"Fout: {fout}");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var fout = await response.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("alert", $"Fout: {fout}");
+            await JS.InvokeVoidAsync("alert", $"Netwerkfout: {ex.Message}");
         }
     }
 
@@ -124,7 +144,3 @@
         public string? Team { get; set; }
     }
 }
-
-
-
-

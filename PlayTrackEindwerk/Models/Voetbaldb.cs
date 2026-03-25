@@ -5,13 +5,13 @@ using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace PlayTrackEindwerk.Models;
 
-public partial class BucketListDbContext : DbContext
+public partial class Voetbaldb : DbContext
 {
-    public BucketListDbContext()
+    public Voetbaldb()
     {
     }
 
-    public BucketListDbContext(DbContextOptions<BucketListDbContext> options)
+    public Voetbaldb(DbContextOptions<Voetbaldb> options)
         : base(options)
     {
     }

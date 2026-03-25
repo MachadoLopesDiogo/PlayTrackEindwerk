@@ -3,7 +3,7 @@ using PlayTrackEindwerk.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = "Server=localhost;Database=voetbaldb;User=root;Password=1234;";
-builder.Services.AddDbContext<BucketListDbContext>(options =>
+builder.Services.AddDbContext<Voetbaldb>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 
