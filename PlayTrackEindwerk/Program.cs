@@ -126,7 +126,7 @@ app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
     db.Wedstrijdheeftspelers.Add(stat);
     await db.SaveChangesAsync();
 
-    return Results.Created("/api/Wedstrijd", stat);
+    return Results.Ok();
 });
 
 // GET: seizoensstatistieken

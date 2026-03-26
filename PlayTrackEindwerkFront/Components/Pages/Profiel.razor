@@ -80,16 +80,7 @@
         _foutmelding = null;
         try
         {
-            var speler = await Http.GetFromJsonAsync<SpelerDto>("api/Speler");
-            if (speler is not null)
-            {
-                _voornaam = speler.Voornaam;
-                _naam = speler.Naam;
-                _geboortedatum = speler.Geboortedatum;
-                _positie = speler.Positie;
-                _rugnummer = speler.Rugnummer;
-                _team = speler.Team;
-            }
+            await Http.GetFromJsonAsync<SpelerDto>("api/Speler");
         }
         catch (Exception ex)
         {
