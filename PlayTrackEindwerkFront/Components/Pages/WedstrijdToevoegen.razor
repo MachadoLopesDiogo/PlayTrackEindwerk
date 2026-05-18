@@ -8,116 +8,79 @@
 
 <div style="max-width: 700px; margin: 0 auto; padding: 40px 20px;">
     <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 24px;">➕ Wedstrijd Toevoegen</h3>
-
     <h5 style="margin-bottom: 12px; color: #555;">Wedstrijdinfo</h5>
-
     <div class="mb-3">
         <label>Datum:</label>
         <input type="string" class="form-control" @bind="_datum" />
     </div>
-
-    <div class="mb-3">
-        <label>Competitie (optioneel):</label>
-        <input type="text" class="form-control" placeholder="bijv. Eerste klasse" @bind="_competitie" />
-    </div>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="mb-3">
-            <label>Thuisteam:</label>
-            <input type="text" class="form-control" placeholder="Thuisteam" @bind="_thuisTeam" />
-        </div>
-        <div class="mb-3">
-            <label>Uitteam:</label>
-            <input type="text" class="form-control" placeholder="Uitteam" @bind="_uitTeam" />
-        </div>
+        <div class="mb-3"><label>Thuisteam:</label><input type="text" class="form-control" placeholder="Thuisteam" @bind="_thuisTeam" /></div>
+        <div class="mb-3"><label>Uitteam:</label><input type="text" class="form-control" placeholder="Uitteam" @bind="_uitTeam" /></div>
     </div>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div class="mb-3">
-            <label>Thuisscore:</label>
-            <input type="number" class="form-control" min="0" max="99" @bind="_thuisScore" />
-        </div>
-        <div class="mb-3">
-            <label>Uitscore:</label>
-            <input type="number" class="form-control" min="0" max="99" @bind="_uitScore" />
-        </div>
+        <div class="mb-3"><label>Thuisscore:</label><input type="number" class="form-control" min="0" max="99" @bind="_thuisScore" /></div>
+        <div class="mb-3"><label>Uitscore:</label><input type="number" class="form-control" min="0" max="99" @bind="_uitScore" /></div>
     </div>
-
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="isThuis" @bind="_isThuis" />
-        <label class="form-check-label" for="isThuis">Ik speelde thuis</label>
-    </div>
-
     <hr style="margin: 24px 0;" />
     <h5 style="margin-bottom: 12px; color: #555;">Mijn Statistieken</h5>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-        <div class="mb-3">
-            <label>Goals:</label>
-            <input type="number" class="form-control" min="0" @bind="_goals" />
-        </div>
-        <div class="mb-3">
-            <label>Assists:</label>
-            <input type="number" class="form-control" min="0" @bind="_assists" />
-        </div>
-        <div class="mb-3">
-            <label>Saves:</label>
-            <input type="number" class="form-control" min="0" @bind="_saves" />
-        </div>
-        <div class="mb-3">
-            <label>Goede tackles:</label>
-            <input type="number" class="form-control" min="0" @bind="_tackles" />
-        </div>
-        <div class="mb-3">
-            <label>Goede aanvallen:</label>
-            <input type="number" class="form-control" min="0" @bind="_aanvallen" />
-        </div>
-        <div class="mb-3">
-            <label>Fouten:</label>
-            <input type="number" class="form-control" min="0" @bind="_fouten" />
-        </div>
-        <div class="mb-3">
-            <label>Gele kaarten:</label>
-            <input type="number" class="form-control" min="0" @bind="_geel" />
-        </div>
-        <div class="mb-3">
-            <label>Rode kaarten:</label>
-            <input type="number" class="form-control" min="0" @bind="_rood" />
-        </div>
+        <div class="mb-3"><label>Goals:</label><input type="number" class="form-control" min="0" @bind="_goals" /></div>
+        <div class="mb-3"><label>Assists:</label><input type="number" class="form-control" min="0" @bind="_assists" /></div>
+        <div class="mb-3"><label>Saves:</label><input type="number" class="form-control" min="0" @bind="_saves" /></div>
+        <div class="mb-3"><label>Goede tackles:</label><input type="number" class="form-control" min="0" @bind="_tackles" /></div>
+        <div class="mb-3"><label>Goede aanvallen:</label><input type="number" class="form-control" min="0" @bind="_aanvallen" /></div>
+        <div class="mb-3"><label>Fouten:</label><input type="number" class="form-control" min="0" @bind="_fouten" /></div>
+        <div class="mb-3"><label>Gele kaarten:</label><input type="number" class="form-control" min="0" @bind="_geel" /></div>
+        <div class="mb-3"><label>Rode kaarten:</label><input type="number" class="form-control" min="0" @bind="_rood" /></div>
     </div>
-
     <button class="btn btn-primary" @onclick="OpslaanWedstrijd">Wedstrijd opslaan</button>
 </div>
 
 @code {
+    record SpelerInfo(int Id, string Voornaam, string Naam, string Positie, string Team);
+    private int _spelerId = 0;
     private string _datum = DateTime.Today.ToString("yyyy-MM-dd");
-    private string? _competitie;
-    private string _thuisTeam = "";
-    private string _uitTeam = "";
-    private int _thuisScore = 0;
-    private int _uitScore = 0;
-    private bool _isThuis = true;
+    private string _thuisTeam = "", _uitTeam = "";
+    private int _thuisScore = 0, _uitScore = 0;
+    private int _goals = 0, _assists = 0, _saves = 0, _tackles = 0, _aanvallen = 0, _fouten = 0, _geel = 0, _rood = 0;
+    private string _teamNaam = "";
 
-    private int _goals = 0;
-    private int _assists = 0;
-    private int _saves = 0;
-    private int _tackles = 0;
-    private int _aanvallen = 0;
-    private int _fouten = 0;
-    private int _geel = 0;
-    private int _rood = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        
+        if (firstRender)
+        {
+            var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+            _spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+
+            var spelerResp = await Http.GetFromJsonAsync<SpelerInfo>($"/api/Speler/{_spelerId}");
+            if (spelerResp != null)
+            {
+                _teamNaam = spelerResp.Team ?? "";
+                _thuisTeam = _teamNaam;
+            }
+            StateHasChanged();
+        }
+    }
 
     private async Task OpslaanWedstrijd()
     {
-        var request = new WedstrijdRequest
+        // Lees ID opnieuw uit localStorage voor de zekerheid
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+        _spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+
+        await JS.InvokeVoidAsync("alert", $"SpelerId = {_spelerId}"); // tijdelijk om te testen
+
+        var request = new
         {
+            SpelerId = _spelerId,
             Datum = _datum,
-            Competitie = _competitie,
             ThuisTeam = _thuisTeam,
             UitTeam = _uitTeam,
             ThuisScore = _thuisScore,
             UitScore = _uitScore,
-            IsThuis = _isThuis,
+            IsThuis = true,
             Goals = _goals,
             Assists = _assists,
             Saves = _saves,
@@ -125,38 +88,15 @@
             Aanvallen = _aanvallen,
             Fouten = _fouten,
             Geel = _geel,
-            Rood = _rood
+            Rood = _rood,
+            Competitie = (string?)null
         };
 
         var response = await Http.PostAsJsonAsync("api/Wedstrijd", request);
-
-        if (response.IsSuccessStatusCode)
-        {
-            Navigation.NavigateTo("/wedstrijden");
-        }
-        else
-        {
-            var fout = await response.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("alert", $"Fout: {fout}");
-        }
+        if (response.IsSuccessStatusCode) Navigation.NavigateTo("/wedstrijd");
+        else await JS.InvokeVoidAsync("alert", $"Fout: {await response.Content.ReadAsStringAsync()}");
     }
 
-    public class WedstrijdRequest
-    {
-        public string Datum { get; set; } = string.Empty;
-        public string? Competitie { get; set; }
-        public string ThuisTeam { get; set; } = string.Empty;
-        public string UitTeam { get; set; } = string.Empty;
-        public int ThuisScore { get; set; }
-        public int UitScore { get; set; }
-        public bool IsThuis { get; set; }
-        public int Goals { get; set; }
-        public int Assists { get; set; }
-        public int Tackles { get; set; }
-        public int Aanvallen { get; set; }
-        public int Fouten { get; set; }
-        public int Geel { get; set; }
-        public int Rood { get; set; }
-        public int Saves { get; set; }
+        
     }
 }

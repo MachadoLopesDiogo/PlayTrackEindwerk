@@ -1,6 +1,7 @@
 ﻿@page "/seizoen"
 @inject HttpClient Http
 @rendermode InteractiveServer
+@inject IJSRuntime JS
 
 <PageTitle>Seizoensstatistieken</PageTitle>
 
@@ -64,7 +65,9 @@
 
     private async Task LaadStats()
     {
-        _stats = await Http.GetFromJsonAsync<SeizoenStatsDto>("api/Seizoen/stats");
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+        int spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+        _stats = await Http.GetFromJsonAsync<SeizoenStatsDto>($"api/Seizoen/stats?spelerId={spelerId}");
     }
 
     public class SeizoenStatsDto

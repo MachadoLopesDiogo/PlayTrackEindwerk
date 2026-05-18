@@ -3,7 +3,7 @@ using PlayTrackEindwerk.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped(sp => new HttpClient {
-    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://localhost:7149/") 
+    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5178/") 
 });
 
 // Add services to the container.

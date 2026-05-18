@@ -44,10 +44,10 @@ public partial class BucketListDbContext : DbContext
             entity.Property(e => e.Idseizoen).HasColumnName("IDSeizoen");
             entity.Property(e => e.Fkwedstrijd).HasColumnName("FKWedstrijd");
 
-            entity.HasOne(d => d.FkwedstrijdNavigation).WithMany(p => p.Seizoens)
-                .HasForeignKey(d => d.Fkwedstrijd)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("seizoen_ibfk_1");
+            //entity.HasOne(d => d.FkwedstrijdNavigation).WithMany(p => p.Seizoens)
+            //    .HasForeignKey(d => d.Fkwedstrijd)
+            //    .OnDelete(DeleteBehavior.ClientSetNull)
+            //    .HasConstraintName("seizoen_ibfk_1");
         });
 
         modelBuilder.Entity<Speler>(entity =>

@@ -1,17 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;  // ← NIEUW
 
-namespace PlayTrackEindwerk.Models;
-
-public partial class Wedstrijd
+namespace PlayTrackEindwerk.Models
 {
-    public int Idwedstrijd { get; set; }
+    public class Wedstrijd
+    {
+        [Key]
+        public int Idwedstrijd { get; set; }
 
-    public DateOnly Datum { get; set; }
+        public DateOnly Datum { get; set; }
 
-    public string Score { get; set; } = null!;
+        // Team namen
+        public string ThuisTeam { get; set; } = string.Empty;
+        public string UitTeam { get; set; } = string.Empty;
+        public string ThuisNaam { get; set; } = string.Empty;
+        public string UitNaam { get; set; } = string.Empty;
 
-    public virtual ICollection<Seizoen> Seizoens { get; set; } = new List<Seizoen>();
+        // Score (bijv. "3-1")
+        public string Score { get; set; } = string.Empty;
 
-    public virtual ICollection<Wedstrijdheeftspeler> Wedstrijdheeftspelers { get; set; } = new List<Wedstrijdheeftspeler>();
+        [NotMapped]  // ← NIEUW: bestaat niet in de database
+        public string Seizoen { get; set; } = string.Empty;
+
+        // Navigatie property
+        public virtual ICollection<Wedstrijdheeftspeler> Wedstrijdheeftspelers { get; set; }
+            = new List<Wedstrijdheeftspeler>();
+    }
 }

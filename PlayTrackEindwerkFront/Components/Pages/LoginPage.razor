@@ -1,52 +1,329 @@
-﻿@page "/login"
-@inject HttpClient Http
+﻿@page "/"
+@page "/login"
 @rendermode InteractiveServer
-@inject NavigationManager Navigation
+@inject NavigationManager Nav
+@inject HttpClient Http
 @inject IJSRuntime JS
 
-<h3>Login</h3>
+<PageTitle>Inloggen - PlayTrack</PageTitle>
 
-<div class="mb-3 mt-3">
-    <label for="username">Gebruikersnaam:</label>
-    <input type="text" class="form-control" id="username" placeholder="gebruikersnaam" @bind="_username" />
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-logo">
+            <span class="logo-icon">⚽</span>
+            <h1>PlayTrack</h1>
+            <p>Voer je naam in om verder te gaan</p>
+        </div>
+        <div class="login-form">
+            <div class="form-group">
+                <label>Voornaam</label>
+                <input @bind="voornaam" placeholder="bijv. Diogo" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label>Achternaam</label>
+                <input @bind="achternaam" placeholder="bijv. Machado Lopes" class="form-input" />
+            </div>
+            @if (fout)
+            {
+                <div class="error-msg">❌ Speler niet gevonden. Controleer je naam.</div>
+                <button class="register-hint-btn" @onclick="OpenRegister">👤 Maak hier een account aan →</button>
+            }
+            <button class="login-btn" @onclick="Login" disabled="@bezig">
+                <span>@(bezig ? "Bezig..." : "Inloggen →")</span>
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="mb-3">
-    <label for="password">Wachtwoord:</label>
-    <input type="password" class="form-control" id="password" placeholder="wachtwoord" @bind="_password" />
-</div>
+@if (toonRegister)
+{
+    <div class="modal-overlay" @onclick="SluitRegister">
+        <div class="modal-card" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>Account aanmaken</h2>
+                <button class="sluit-btn" @onclick="SluitRegister">✕</button>
+            </div>
+            <div class="form-group">
+                <label>Voornaam</label>
+                <input @bind="regVoornaam" placeholder="bijv. Diogo" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label>Achternaam</label>
+                <input @bind="regAchternaam" placeholder="bijv. Machado Lopes" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label>Positie</label>
+                <select @bind="regPositie" class="form-input">
+                    <option value="">-- Kies positie --</option>
+                    <option value="GK">Doelman (GK)</option>
+                    <option value="DEF">Verdediger (DEF)</option>
+                    <option value="MID">Middenvelder (MID)</option>
+                    <option value="CMD">Centrale Middenvelder (CMD)</option>
+                    <option value="ATT">Aanvaller (ATT)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Team</label>
+                <input @bind="regTeam" placeholder="bijv. Olen United" class="form-input" />
+            </div> 
 
-<button class="btn btn-primary" @onclick="LoginUser">Log in</button>
+            @if (!string.IsNullOrEmpty(regFout))
+            {
+                <div class="error-msg">❌ @regFout</div>
+            }
+            @if (regSucces)
+            {
+                <div class="succes-msg">✅ Account aangemaakt! Je wordt ingelogd...</div>
+            }
+            <button class="login-btn" @onclick="Registreer" disabled="@regBezig">
+                <span>@(regBezig ? "Bezig..." : "Account aanmaken →")</span>
+            </button>
+        </div>
+    </div>
+}
 
 @code {
-    private string _username = "";
-    private string _password = "";
+    string voornaam = "", achternaam = "";
+    bool fout = false, bezig = false;
+    bool toonRegister = false;
+    string regVoornaam = "", regAchternaam = "", regPositie = "", regFout = "";
+    bool regBezig = false, regSucces = false;
+    string regTeam = "";
 
-    private async Task LoginUser()
+    async Task Login()
     {
-        var url = $"/users/login?username={Uri.EscapeDataString(_username)}&password={Uri.EscapeDataString(_password)}";
-        var response = await Http.GetAsync(url);
-
+        if (string.IsNullOrWhiteSpace(voornaam) || string.IsNullOrWhiteSpace(achternaam)) return;
+        bezig = true; fout = false;
+        var response = await Http.PostAsJsonAsync("/api/Login", new { Voornaam = voornaam, Achternaam = achternaam });
+        bezig = false;
         if (response.IsSuccessStatusCode)
         {
-            var user = await response.Content.ReadFromJsonAsync<UserResponse>();
-            await JS.InvokeVoidAsync("localStorage.setItem", "userId", user!.userId.ToString());
-            await JS.InvokeVoidAsync("localStorage.setItem", "username", user.username);
-            Navigation.NavigateTo("/bucketlistitem");
+            var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
+            await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
+            Nav.NavigateTo("/wedstrijd");
         }
-        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            await JS.InvokeVoidAsync("alert", "Foute gebruikersnaam of wachtwoord.");
-        }
-        else
-        {
-            await JS.InvokeVoidAsync("alert", "Onbekende fout bij login.");
-        }
+        else fout = true;
     }
 
-    public class UserResponse
+    void OpenRegister() { regVoornaam = voornaam; regAchternaam = achternaam; regFout = ""; regSucces = false; toonRegister = true; }
+    void SluitRegister() { toonRegister = false; }
+
+    async Task Registreer()
     {
-        public int userId { get; set; }
-        public string username { get; set; } = string.Empty;
+        if (string.IsNullOrWhiteSpace(regVoornaam) || string.IsNullOrWhiteSpace(regAchternaam)) { regFout = "Vul voornaam en achternaam in."; return; }
+        if (string.IsNullOrWhiteSpace(regPositie)) { regFout = "Kies een positie."; return; }
+        regBezig = true; regFout = "";
+        if (string.IsNullOrWhiteSpace(regTeam)) { regFout = "Vul je teamnaam in."; return; }
+        var response = await Http.PostAsJsonAsync("/api/Register", new { Voornaam = regVoornaam, Naam = regAchternaam, Geboortedatum = (string?)null, Positie = regPositie, Rugnummer = 1, Team = regTeam });
+        regBezig = false;
+        if (response.IsSuccessStatusCode)
+        {
+            regSucces = true;
+            await Task.Delay(1500);
+            toonRegister = false; voornaam = regVoornaam; achternaam = regAchternaam;
+            await Login();
+        }
+        else regFout = "Er ging iets mis. Probeer opnieuw.";
     }
+    record SpelerResult(int Id, string Voornaam, string Achternaam, string Positie);
 }
+
+<style>
+    .login-wrapper {
+        background:DarkBlue;
+		
+    }
+
+    .login-card {
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 20px;
+        padding: 48px 40px;
+        width: 100%;
+        max-width: 420px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    }
+
+    .login-logo {
+        text-align: center;
+        margin-bottom: 36px;
+    }
+
+    .logo-icon {
+        font-size: 3rem;
+    }
+
+    .login-logo h1 {
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 8px 0 4px;
+        letter-spacing: -0.5px;
+    }
+
+    .login-logo p {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+        .form-group label {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+    .form-input {
+        width: 100%;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 1rem;
+        transition: border-color 0.2s, background 0.2s;
+        box-sizing: border-box;
+    }
+
+        .form-input:focus {
+            border-color: #2d7a3e;
+            background: rgba(45,122,62,0.1);
+            /* was: #3b82f6 / rgba(59,130,246,0.1) */
+        }
+
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        .form-input option {
+            background: #1a3a5c;
+            color: #fff;
+        }
+
+    .input-error {
+        border-color: #ef4444 !important;
+    }
+
+    .error-msg {
+        color: #fca5a5;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        padding: 10px 14px;
+        background: rgba(239,68,68,0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(239,68,68,0.2);
+    }
+
+    .succes-msg {
+        color: #86efac;
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+        padding: 10px 14px;
+        background: rgba(34,197,94,0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .register-hint-btn {
+        background: rgba(45,122,62,0.15);
+        border: 1px solid rgba(45,122,62,0.4);
+        color: #86efac;
+        border-radius: 10px;
+        padding: 11px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-bottom: 12px;
+        transition: background 0.2s;
+    }
+
+        .register-hint-btn:hover {
+            background: rgba(45,122,62,0.25);
+        }
+
+    .login-btn {
+        background: linear-gradient(135deg, #2d7a3e, #1a4d2e);
+        /* was: linear-gradient(135deg, #3b82f6, #1d4ed8) */
+    
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        margin-top: 6px;
+    }
+
+        .login-btn:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-card {
+        background: #0d2b18; /* was: #0f2340 */
+    
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 20px;
+        padding: 36px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .modal-header h2 {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .sluit-btn {
+        background: rgba(255,255,255,0.1);
+        border: none;
+        color: #fff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+
+        .sluit-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+</style>

@@ -1,32 +1,45 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">PlayTrackEindwerkFront</a>
+﻿<div class="sidebar-wrapper">
+    <!-- Logo sectie -->
+    <div class="sidebar-logo">
+        <div class="logo-circle">⚽</div>
+        <div class="logo-text">
+            <span class="logo-title">PlayTrack</span>
+            <span class="logo-sub"></span>
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="sidebar-divider"></div>
+
+    <div class="nav-label"></div>
+
+    <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+    <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+        <nav class="flex-column">
+            <div class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-text">Inloggen</span>
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="Wedstrijd">
+                    <span class="nav-icon">🏆</span>
+                    <span class="nav-text">Wedstrijden</span>
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link" href="Seizoen">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Seizoen</span>
+                </NavLink>
+            </div>
+        </nav>
+    </div>
+
+   
+    <div class="sidebar-footer">
+        <span>v1.0 · PlayTrack</span>
     </div>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Wedstrijd">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Wedstrijd
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Seizoen">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Seizoen
-            </NavLink>
-        </div>
-
-        
-    </nav>
-</div>
-

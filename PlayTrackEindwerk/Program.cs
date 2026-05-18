@@ -1,13 +1,26 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PlayTrackEindwerk.Models;
+using System.Collections.Generic;
+using System.Text.Json;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
 var connectionString = "Server=localhost;Database=voetbaldb;User=root;Password=1234;";
+
 builder.Services.AddDbContext<Voetbaldb>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+});
 
 builder.Services.AddCors(options =>
 {
@@ -17,31 +30,55 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ✅ Slechts één keer
+app.UseHttpsRedirection();
+app.UseCors();
+app.UseSession();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-app.UseCors();
 
-// GET: profiel van de speler (eerste speler in db)
+
+
+// GET: profiel van de speler
 app.MapGet("/api/Speler", async (Voetbaldb db) =>
 {
-    var speler = await db.Spelers.FirstOrDefaultAsync();
-    if (speler == null) return Results.NotFound();
-
-    return Results.Ok(new
+    try
     {
-        Id = speler.Idspeler,
-        Voornaam = speler.SpelerVoornaam,
-        Naam = speler.SpelerAchternaam,
-        Positie = speler.Positie,
-        Geboortedatum = (string?)null,
-        Rugnummer = 1,
-        Team = (string?)null
-    });
+        Console.WriteLine("🔄 Proberen speler op te halen...");
+
+        var speler = await db.Spelers.FirstOrDefaultAsync();
+
+        if (speler == null)
+        {
+            Console.WriteLine("⚠️ Geen speler gevonden in de database.");
+            return Results.NotFound("Geen speler gevonden");
+        }
+
+        Console.WriteLine($"✅ Speler succesvol gevonden: {speler.SpelerVoornaam} {speler.SpelerAchternaam}");
+
+        return Results.Ok(new
+        {
+            Id = speler.Idspeler,
+            Voornaam = speler.SpelerVoornaam,
+            Naam = speler.SpelerAchternaam,
+            Positie = speler.Positie ?? "Onbekend",
+            Geboortedatum = (string?)null,
+            Rugnummer = 1,
+            Team = (string?)null
+        });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("🚨 KRITIEKE FOUT in /api/Speler:");
+        Console.WriteLine(ex.Message);
+        Console.WriteLine(ex.ToString());
+        return Results.Problem("Database fout: " + ex.Message, statusCode: 500);
+    }
 });
 
 // POST: profiel opslaan
@@ -69,49 +106,69 @@ app.MapPost("/api/Speler", async (SpelerDto dto, Voetbaldb db) =>
     return Results.Ok();
 });
 
-// GET: alle wedstrijden van de speler
-app.MapGet("/api/Wedstrijd", async (Voetbaldb db) =>
+app.MapGet("/api/Wedstrijd/{spelerId}", async (int spelerId, Voetbaldb db) =>
 {
-    var speler = await db.Spelers.FirstOrDefaultAsync();
-    if (speler == null) return Results.Ok(new List<object>());
-
     var lijst = await db.Wedstrijdheeftspelers
-        .Where(w => w.Fkspeler == speler.Idspeler)
+        .Where(w => w.Fkspeler == spelerId)
         .Include(w => w.FkwedstrijdNavigation)
-        .Select(w => new
+        .OrderByDescending(w => w.FkwedstrijdNavigation.Datum)
+        .ToListAsync();
+
+    var speler = await db.Spelers.FindAsync(spelerId);
+    var teamNaam = speler?.Team ?? "";
+
+    var result = lijst.Select(w =>
+    {
+        var delen = w.FkwedstrijdNavigation.Score?.Split('-') ?? new[] { "0", "0" };
+        int thuisScore = int.TryParse(delen[0], out var t) ? t : 0;
+        int uitScore = delen.Length > 1 && int.TryParse(delen[1], out var u) ? u : 0;
+
+        bool isThuis = string.Equals(w.FkwedstrijdNavigation.ThuisNaam, teamNaam, StringComparison.OrdinalIgnoreCase);
+        if (!isThuis && !string.Equals(w.FkwedstrijdNavigation.UitNaam, teamNaam, StringComparison.OrdinalIgnoreCase))
+            isThuis = true;
+
+        int mijnScore = isThuis ? thuisScore : uitScore;
+        int tegensScore = isThuis ? uitScore : thuisScore;
+
+        string resultaat = mijnScore > tegensScore ? "Gewonnen"
+                         : mijnScore == tegensScore ? "Gelijk"
+                         : "Verloren";
+        return new
         {
             Id = w.Fkwedstrijd,
-            Datum = w.FkwedstrijdNavigation.Datum.ToString(),
-            ThuisTeam = w.FkwedstrijdNavigation.Score,
-            UitTeam = "",
-            ThuisScore = 0,
-            UitScore = 0,
-            IsThuis = true,
-            Competitie = (string?)null,
+            Datum = w.FkwedstrijdNavigation.Datum.ToString("yyyy-MM-dd"),
+            ThuisTeam = w.FkwedstrijdNavigation.ThuisNaam,
+            UitTeam = w.FkwedstrijdNavigation.UitNaam,
+            ThuisScore = thuisScore,
+            UitScore = uitScore,
+            IsThuis = isThuis,
+            Resultaat = resultaat,
             Goals = w.AantalGoals,
             Assists = w.AantalAssists,
             Rating = (decimal)w.RatingOp10
-        })
-        .ToListAsync();
+        };
+    }).ToList();
 
-    return Results.Ok(lijst);
+    return Results.Ok(result);
 });
-
-// POST: wedstrijd toevoegen
 app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
 {
-    var speler = await db.Spelers.FirstOrDefaultAsync();
+    var speler = await db.Spelers.FindAsync(req.SpelerId);
     if (speler == null) return Results.BadRequest("Geen speler gevonden.");
 
     var wedstrijd = new Wedstrijd
     {
         Datum = DateOnly.Parse(req.Datum),
-        Score = $"{req.ThuisScore}-{req.UitScore}"
+        Score = $"{req.ThuisScore}-{req.UitScore}",
+        ThuisTeam = req.ThuisTeam ?? "10",
+        UitTeam = req.UitTeam ?? "1",
+        ThuisNaam = string.IsNullOrWhiteSpace(req.ThuisTeam) ? "Olen United" : req.ThuisTeam,
+        UitNaam = string.IsNullOrWhiteSpace(req.UitTeam) ? "Tegenstander" : req.UitTeam
     };
     db.Wedstrijds.Add(wedstrijd);
     await db.SaveChangesAsync();
 
-    var stat = new Wedstrijdheeftspeler
+    db.Wedstrijdheeftspelers.Add(new Wedstrijdheeftspeler
     {
         Fkspeler = speler.Idspeler,
         Fkwedstrijd = wedstrijd.Idwedstrijd,
@@ -122,17 +179,14 @@ app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
         AantalBelangrijkeActies = req.Aanvallen,
         AantalBelangrijkeTackles = req.Tackles,
         RatingOp10 = 5
-    };
-    db.Wedstrijdheeftspelers.Add(stat);
+    });
     await db.SaveChangesAsync();
-
-    return Results.Ok();
+    return Results.Ok(new { Success = true });
 });
-
 // GET: seizoensstatistieken
-app.MapGet("/api/Seizoen/stats", async (Voetbaldb db) =>
+app.MapGet("/api/Seizoen/stats", async (int spelerId, Voetbaldb db) =>
 {
-    var speler = await db.Spelers.FirstOrDefaultAsync();
+    var speler = await db.Spelers.FindAsync(spelerId);
     if (speler == null)
         return Results.Ok(new { Wedstrijden = 0, Goals = 0, Assists = 0, Rating = 0m, Gewonnen = 0, Gelijk = 0, Verloren = 0 });
 
@@ -164,6 +218,40 @@ app.MapGet("/api/Seizoen/stats", async (Voetbaldb db) =>
         Verloren = verloren
     });
 });
+app.MapPost("/api/Login", async (LoginDto dto, Voetbaldb db) =>
+{
+    var speler = await db.Spelers.FirstOrDefaultAsync(s =>
+        s.SpelerVoornaam.ToLower().Trim() == dto.Voornaam.ToLower().Trim() &&
+        s.SpelerAchternaam.ToLower().Trim() == dto.Achternaam.ToLower().Trim());
+
+    if (speler == null)
+        return Results.NotFound(new { bericht = "Speler niet gevonden." });
+
+    return Results.Ok(new
+    {
+        Id = speler.Idspeler,
+        Voornaam = speler.SpelerVoornaam,
+        Achternaam = speler.SpelerAchternaam,
+        Positie = speler.Positie,
+        Team = speler.Team   
+    });
+});
+app.MapPost("/api/Register", async (SpelerDto dto, Voetbaldb db) =>
+{
+    if (string.IsNullOrWhiteSpace(dto.Team))
+        return Results.BadRequest(new { bericht = "Teamnaam is verplicht." });
+
+    var nieuw = new Speler
+    {
+        SpelerVoornaam = dto.Voornaam.Trim(),
+        SpelerAchternaam = dto.Naam.Trim(),
+        Positie = dto.Positie?.Trim() ?? "",
+        Team = dto.Team.Trim()   
+    };
+    db.Spelers.Add(nieuw);
+    await db.SaveChangesAsync();
+    return Results.Ok(new { Id = nieuw.Idspeler });
+});
 
 app.Run();
 
@@ -171,6 +259,8 @@ app.Run();
 record SpelerDto
  (string Voornaam, string Naam, string? Geboortedatum, string Positie, int Rugnummer, string? Team);
 
-record WedstrijdRequest(string Datum, string? Competitie, string ThuisTeam, string UitTeam,
+record WedstrijdRequest(int SpelerId, string Datum, string? Competitie, string ThuisTeam, string UitTeam,
     int ThuisScore, int UitScore, bool IsThuis,
     int Goals, int Assists, int Saves, int Tackles, int Aanvallen, int Fouten, int Geel, int Rood);
+record LoginDto(string Voornaam, string Achternaam);
+

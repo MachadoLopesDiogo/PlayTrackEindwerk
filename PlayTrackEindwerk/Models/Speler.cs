@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PlayTrackEindwerk.Models;
-
-public partial class Speler
+namespace PlayTrackEindwerk.Models
 {
-    public int Idspeler { get; set; }
+    public class Speler
+    {
+        [Key]
+        public int Idspeler { get; set; }
 
-    public string SpelerVoornaam { get; set; } = null!;
+        public string SpelerVoornaam { get; set; } = string.Empty;
+        public string SpelerAchternaam { get; set; } = string.Empty;
+        public string Positie { get; set; } = string.Empty;
+        public string Team { get; set; } = string.Empty;
 
-    public string SpelerAchternaam { get; set; } = null!;
-
-    public string Positie { get; set; } = null!;
-
-    public virtual ICollection<Wedstrijdheeftspeler> Wedstrijdheeftspelers { get; set; } = new List<Wedstrijdheeftspeler>();
+        public virtual ICollection<Wedstrijdheeftspeler> Wedstrijdheeftspelers { get; set; } = new List<Wedstrijdheeftspeler>();
+    }
 }
