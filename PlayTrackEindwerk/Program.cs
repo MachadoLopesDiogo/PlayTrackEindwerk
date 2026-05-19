@@ -81,6 +81,24 @@ app.MapGet("/api/Speler", async (Voetbaldb db) =>
     }
 });
 
+
+app.MapGet("/api/Speler/{id}", async (int id, Voetbaldb db) =>
+{
+    var speler = await db.Spelers.FindAsync(id);
+    if (speler == null) return Results.NotFound();
+    return Results.Ok(new
+    {
+        Id = speler.Idspeler,
+        Voornaam = speler.SpelerVoornaam,
+        Naam = speler.SpelerAchternaam,
+        Positie = speler.Positie,
+        Team = speler.Team
+    });
+});
+
+
+
+
 // POST: profiel opslaan
 app.MapPost("/api/Speler", async (SpelerDto dto, Voetbaldb db) =>
 {
@@ -178,7 +196,7 @@ app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
         AantalGrofFouten = req.Fouten,
         AantalBelangrijkeActies = req.Aanvallen,
         AantalBelangrijkeTackles = req.Tackles,
-        RatingOp10 = 5
+        RatingOp10 = (int)BerekenRating(req.Goals, req.Assists, req.Tackles, req.Aanvallen, req.Fouten, req.Geel, req.Rood, req.Gewonnen)
     });
     await db.SaveChangesAsync();
     return Results.Ok(new { Success = true });
@@ -252,7 +270,21 @@ app.MapPost("/api/Register", async (SpelerDto dto, Voetbaldb db) =>
     await db.SaveChangesAsync();
     return Results.Ok(new { Id = nieuw.Idspeler });
 });
+static double BerekenRating(int goals, int assists, int tackles, int aanvallen, int fouten, int geel, int rood, bool gewonnen,int saves)
+{
+    double rating = 5.0;
+    rating += goals * 1.5;
+    rating += assists * 1.2 ;
+    rating += tackles * 0.3;
+    rating += aanvallen * 0.2;
+    rating += saves * 0.7;
+    rating -= fouten * 0.3;
+    rating -= geel * 0.5;
+    rating -= rood * 1.5;
 
+    if (gewonnen) rating += 1.0;
+    return Math.Clamp(rating, 1.0, 10.0);
+}
 app.Run();
 
 // DTOs
@@ -261,6 +293,6 @@ record SpelerDto
 
 record WedstrijdRequest(int SpelerId, string Datum, string? Competitie, string ThuisTeam, string UitTeam,
     int ThuisScore, int UitScore, bool IsThuis,
-    int Goals, int Assists, int Saves, int Tackles, int Aanvallen, int Fouten, int Geel, int Rood);
+    int Goals, int Assists, int Saves, int Tackles, int Aanvallen, int Fouten, int Geel, int Rood, bool Gewonnen);
 record LoginDto(string Voornaam, string Achternaam);
 

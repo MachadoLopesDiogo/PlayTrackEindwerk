@@ -94,15 +94,23 @@
     {
         if (string.IsNullOrWhiteSpace(voornaam) || string.IsNullOrWhiteSpace(achternaam)) return;
         bezig = true; fout = false;
-        var response = await Http.PostAsJsonAsync("/api/Login", new { Voornaam = voornaam, Achternaam = achternaam });
-        bezig = false;
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
-            await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
-            Nav.NavigateTo("/wedstrijd");
+            var response = await Http.PostAsJsonAsync("/api/Login", new { Voornaam = voornaam, Achternaam = achternaam });
+            bezig = false;
+            if (response.IsSuccessStatusCode)
+            {
+                var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
+                await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
+                Nav.NavigateTo("/wedstrijd");
+            }
+            else fout = true;
         }
-        else fout = true;
+        catch
+        {
+            bezig = false;
+            fout = true;
+        }
     }
 
     void OpenRegister() { regVoornaam = voornaam; regAchternaam = achternaam; regFout = ""; regSucces = false; toonRegister = true; }
@@ -112,6 +120,7 @@
     {
         if (string.IsNullOrWhiteSpace(regVoornaam) || string.IsNullOrWhiteSpace(regAchternaam)) { regFout = "Vul voornaam en achternaam in."; return; }
         if (string.IsNullOrWhiteSpace(regPositie)) { regFout = "Kies een positie."; return; }
+        
         regBezig = true; regFout = "";
         if (string.IsNullOrWhiteSpace(regTeam)) { regFout = "Vul je teamnaam in."; return; }
         var response = await Http.PostAsJsonAsync("/api/Register", new { Voornaam = regVoornaam, Naam = regAchternaam, Geboortedatum = (string?)null, Positie = regPositie, Rugnummer = 1, Team = regTeam });
@@ -123,15 +132,14 @@
             toonRegister = false; voornaam = regVoornaam; achternaam = regAchternaam;
             await Login();
         }
-        else regFout = "Er ging iets mis. Probeer opnieuw.";
+        else regFout = $"Fout: {await response.Content.ReadAsStringAsync()}";
     }
     record SpelerResult(int Id, string Voornaam, string Achternaam, string Positie);
 }
 
 <style>
     .login-wrapper {
-        background:DarkBlue;
-		
+        background: #1a5c2a;
     }
 
     .login-card {

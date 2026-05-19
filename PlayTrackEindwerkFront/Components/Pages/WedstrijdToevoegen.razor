@@ -70,7 +70,7 @@
         var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
         _spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
 
-        await JS.InvokeVoidAsync("alert", $"SpelerId = {_spelerId}"); // tijdelijk om te testen
+        
 
         var request = new
         {

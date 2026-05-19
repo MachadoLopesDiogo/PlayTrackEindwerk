@@ -96,6 +96,7 @@ namespace PlayTrackEindwerk.Models
                       .HasForeignKey(d => d.Fkwedstrijd)
                       .OnDelete(DeleteBehavior.ClientSetNull)
                       .HasConstraintName("wedstrijdheeftspeler_ibfk_2");
+
             });
 
             OnModelCreatingPartial(modelBuilder);

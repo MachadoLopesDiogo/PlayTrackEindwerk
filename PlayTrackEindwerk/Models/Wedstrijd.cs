@@ -19,8 +19,9 @@ namespace PlayTrackEindwerk.Models
         // Score (bijv. "3-1")
         public string Score { get; set; } = string.Empty;
 
-        [NotMapped]  // ← NIEUW: bestaat niet in de database
+        [NotMapped]  
         public string Seizoen { get; set; } = string.Empty;
+       
 
         // Navigatie property
         public virtual ICollection<Wedstrijdheeftspeler> Wedstrijdheeftspelers { get; set; }
