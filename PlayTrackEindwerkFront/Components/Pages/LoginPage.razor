@@ -10,9 +10,9 @@
 <div class="login-wrapper">
     <div class="login-card">
         <div class="login-logo">
-            <span class="logo-icon">⚽</span>
-            <h1>PlayTrack</h1>
-            <p>Voer je naam in om verder te gaan</p>
+            
+            <h1>Welkom Terug</h1>
+            
         </div>
         <div class="login-form">
             <div class="form-group">
@@ -25,8 +25,8 @@
             </div>
             @if (fout)
             {
-                <div class="error-msg">❌ Speler niet gevonden. Controleer je naam.</div>
-                <button class="register-hint-btn" @onclick="OpenRegister">👤 Maak hier een account aan →</button>
+                <div class="error-msg"> Speler niet gevonden. Controleer je naam.</div>
+                <button class="register-hint-btn" @onclick="OpenRegister"> Maak hier een account aan →</button>
             }
             <button class="login-btn" @onclick="Login" disabled="@bezig">
                 <span>@(bezig ? "Bezig..." : "Inloggen →")</span>
@@ -56,10 +56,17 @@
                 <select @bind="regPositie" class="form-input">
                     <option value="">-- Kies positie --</option>
                     <option value="GK">Doelman (GK)</option>
-                    <option value="DEF">Verdediger (DEF)</option>
-                    <option value="MID">Middenvelder (MID)</option>
-                    <option value="CMD">Centrale Middenvelder (CMD)</option>
-                    <option value="ATT">Aanvaller (ATT)</option>
+                    <option value="LA">LinksAchter (LA)</option>
+                    <option value="RA">RechtsAchter (RA)</option>
+                    <option value="CV">Centrale Verdediger (CV)</option>
+                    <option value="CM">Middenvelder (CM)</option>
+                    <option value="DM">Defensive Middenvelder (DM)</option>
+                    <option value="LB">Linksbuiten (LB)</option>
+                    <option value="RB">Rechtsbuiten (RB)</option>
+                    <option value="RM">Rechtsmidden (RM)</option>
+                    <option value="LM">Linksmidden (LM)</option>
+                    <option value="CF">Aanvallendemiddenvelder (CF)</option>
+                    <option value="ST">Spits (ST)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -69,11 +76,11 @@
 
             @if (!string.IsNullOrEmpty(regFout))
             {
-                <div class="error-msg">❌ @regFout</div>
+                <div class="error-msg"> @regFout</div>
             }
             @if (regSucces)
             {
-                <div class="succes-msg">✅ Account aangemaakt! Je wordt ingelogd...</div>
+                <div class="succes-msg"> Account aangemaakt! Je wordt ingelogd...</div>
             }
             <button class="login-btn" @onclick="Registreer" disabled="@regBezig">
                 <span>@(regBezig ? "Bezig..." : "Account aanmaken →")</span>
@@ -102,6 +109,7 @@
             {
                 var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
                 await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
+                await JS.InvokeVoidAsync("localStorage.setItem", "spelerNaam", speler.Voornaam + " " + speler.Achternaam); // ← toevoegen
                 Nav.NavigateTo("/wedstrijd");
             }
             else fout = true;

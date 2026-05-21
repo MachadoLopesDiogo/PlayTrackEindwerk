@@ -1,5 +1,18 @@
-﻿<div class="sidebar-wrapper">
-    <!-- Logo sectie -->
+﻿@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="top-row" style="display: flex; justify-content: flex-end; align-items: center; padding: 8px 16px; background: #1a5c2a;">
+    @if (!string.IsNullOrEmpty(loggedInNaam))
+    {
+        <span style="color: white; margin-right: 10px;">👤 @loggedInNaam</span>
+        <button @onclick="Logout" style="background: rgba(255,80,80,0.7); color: white; border: none; padding: 4px 12px; border-radius: 999px; cursor: pointer;">
+            Uitloggen
+        </button>
+    }
+</div>
+
+<div class="sidebar-wrapper">
     <div class="sidebar-logo">
         <div class="logo-circle">⚽</div>
         <div class="logo-text">
@@ -7,14 +20,9 @@
             <span class="logo-sub"></span>
         </div>
     </div>
-
-    <!-- Divider -->
     <div class="sidebar-divider"></div>
-
     <div class="nav-label"></div>
-
     <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
     <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
         <nav class="flex-column">
             <div class="nav-item">
@@ -37,9 +45,55 @@
             </div>
         </nav>
     </div>
-
-   
     <div class="sidebar-footer">
-        <span>v1.0 · PlayTrack</span>
+        <span>v1.0 • PlayTrack</span>
     </div>
 </div>
+
+@code {
+    private string loggedInNaam = "";
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        await LaadNaam();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LaadNaam();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LaadNaam()
+    {
+        try
+        {
+            var naam = await JS.InvokeAsync<string?>("localStorage.getItem", "spelerNaam");
+            loggedInNaam = naam ?? "";
+        }
+        catch { }
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "spelerId");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "spelerNaam");
+        loggedInNaam = "";
+        StateHasChanged();
+        Navigation.NavigateTo("/login", forceLoad: false);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -41,13 +41,15 @@ namespace PlayTrackEindwerk.Models
                 entity.HasIndex(e => e.Fkwedstrijd, "FKWedstrijd");
                 entity.Property(e => e.Idseizoen).HasColumnName("IDSeizoen");
                 entity.Property(e => e.Fkwedstrijd).HasColumnName("FKWedstrijd");
+                entity.Property(e => e.NiveauSeizoen).HasColumnName("NiveauSeizoen");
+                
 
-                // Tijdelijk uitgeschakeld om error te vermijden
-                // entity.HasOne(d => d.FkwedstrijdNavigation)
-                //       .WithMany(p => p.Seizoens)
-                //       .HasForeignKey(d => d.Fkwedstrijd)
-                //       .OnDelete(DeleteBehavior.ClientSetNull)
-                //       .HasConstraintName("seizoen_ibfk_1");
+                // Foreign key expliciet instellen zodat EF niet zelf een kolom verzint
+                entity.HasOne(d => d.FkwedstrijdNavigation)
+                      .WithMany()
+                      .HasForeignKey(d => d.Fkwedstrijd)
+                      .OnDelete(DeleteBehavior.ClientSetNull)
+                      .HasConstraintName("seizoen_ibfk_1");
             });
 
             modelBuilder.Entity<Speler>(entity =>

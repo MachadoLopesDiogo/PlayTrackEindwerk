@@ -196,7 +196,7 @@ app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
         AantalGrofFouten = req.Fouten,
         AantalBelangrijkeActies = req.Aanvallen,
         AantalBelangrijkeTackles = req.Tackles,
-        RatingOp10 = (int)BerekenRating(req.Goals, req.Assists, req.Tackles, req.Aanvallen, req.Fouten, req.Geel, req.Rood, req.Gewonnen)
+        RatingOp10 = (int)BerekenRating(req.Goals, req.Assists, req.Tackles, req.Aanvallen, req.Fouten, req.Geel, req.Rood, req.Gewonnen,req.Verloren,req.Saves)
     });
     await db.SaveChangesAsync();
     return Results.Ok(new { Success = true });
@@ -216,11 +216,16 @@ app.MapGet("/api/Seizoen/stats", async (int spelerId, Voetbaldb db) =>
     int gewonnen = 0, gelijk = 0, verloren = 0;
     foreach (var s in stats)
     {
-        var delen = s.FkwedstrijdNavigation.Score.Split('-');
+        var w = s.FkwedstrijdNavigation;
+        var delen = w.Score.Split('-');
         if (delen.Length == 2 && int.TryParse(delen[0], out int t) && int.TryParse(delen[1], out int u))
         {
-            if (t > u) gewonnen++;
-            else if (t == u) gelijk++;
+            bool isThuis = w.ThuisTeam == speler.Team;
+            int mijnScore = isThuis ? t : u;
+            int tegenScore = isThuis ? u : t;
+
+            if (mijnScore > tegenScore) gewonnen++;
+            else if (mijnScore == tegenScore) gelijk++;
             else verloren++;
         }
     }
@@ -270,19 +275,20 @@ app.MapPost("/api/Register", async (SpelerDto dto, Voetbaldb db) =>
     await db.SaveChangesAsync();
     return Results.Ok(new { Id = nieuw.Idspeler });
 });
-static double BerekenRating(int goals, int assists, int tackles, int aanvallen, int fouten, int geel, int rood, bool gewonnen,int saves)
+static double BerekenRating(int goals, int assists, int tackles, int aanvallen, int fouten, int geel, int rood, bool gewonnen,bool verloren,int saves)
 {
-    double rating = 5.0;
-    rating += goals * 1.5;
-    rating += assists * 1.2 ;
+    double rating = 6.0;
+    rating += goals * 2.0 ;
+    rating += assists * 1.5 ;
     rating += tackles * 0.3;
     rating += aanvallen * 0.2;
-    rating += saves * 0.7;
+    rating += saves * 0.5;
     rating -= fouten * 0.3;
-    rating -= geel * 0.5;
-    rating -= rood * 1.5;
+    rating -= geel * 1.0;
+    rating -= rood * 3;
 
     if (gewonnen) rating += 1.0;
+    else if (verloren) rating -= 1.0;
     return Math.Clamp(rating, 1.0, 10.0);
 }
 app.Run();
@@ -293,6 +299,6 @@ record SpelerDto
 
 record WedstrijdRequest(int SpelerId, string Datum, string? Competitie, string ThuisTeam, string UitTeam,
     int ThuisScore, int UitScore, bool IsThuis,
-    int Goals, int Assists, int Saves, int Tackles, int Aanvallen, int Fouten, int Geel, int Rood, bool Gewonnen);
+    int Goals, int Assists, int Saves, int Tackles, int Aanvallen, int Fouten, int Geel, int Rood, bool Gewonnen,bool Verloren);
 record LoginDto(string Voornaam, string Achternaam);
 
