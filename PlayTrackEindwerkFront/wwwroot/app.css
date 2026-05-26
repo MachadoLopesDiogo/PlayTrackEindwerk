@@ -1,0 +1,31 @@
+/* ====================== WITTE LEESBARE TEKST OP ZWARTE ACHTERGROND ====================== */
+
+/* Algemene tekst wit maken */
+body, .page, main, article, h1, h2, h3, h4, p, span, label, div {
+    color: #ffffff !important;
+}
+
+/* Belangrijke headings extra wit */
+h1, h2, .mud-typography-h1, .mud-typography-h2 {
+    color: #ffffff !important;
+}
+
+/* Tekst in cards en witte boxen */
+.card, .bg-white, .mud-card, div[style*="background"] {
+    color: #ffffff !important;
+}
+
+/* Minder belangrijke tekst (muted) iets lichter grijs */
+.text-muted, .text-secondary, small {
+    color: #cccccc !important;
+}
+
+/* Links en knopteksten */
+a, .btn, button {
+    color: #ffffff !important;
+}
+
+/* Specifiek voor jouw wedstrijd card */
+.card * {
+    color: #ffffff !important;
+}

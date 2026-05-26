@@ -1,0 +1,83 @@
+﻿@page "/seizoen"
+@inject HttpClient Http
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>Seizoensstatistieken</PageTitle>
+
+<div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+    <h3 style="font-size: 32px; font-weight: bold; margin-bottom: 30px; color:#000 !important;">📊 Seizoensstatistieken</h3>
+
+    @if (_stats == null)
+    {
+        <p style="text-align: center; padding: 60px 20px; color:#000;">Laden...</p>
+    }
+    else
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-bottom: 40px;">
+            <div style="padding: 24px; background: white; border: 1px solid ; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <div style="font-size: 36px; font-weight: bold; color: #1a73e8!important;">@_stats.Wedstrijden</div>
+                <div style="color: #000!important ; margin-top: 6px;">Wedstrijden</div>
+            </div>
+            <div style="padding: 24px; background: white; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <div style="font-size: 36px; font-weight: bold; color: #43a047!important;">@_stats.Goals</div>
+                <div style="color: #000 !important ; margin-top: 6px;">Goals</div>
+            </div>
+            <div style="padding: 24px; background: white; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <div style="font-size: 36px; font-weight: bold; color: #fb8c00!important;">@_stats.Assists</div>
+                <div style="color: #000 !important; margin-top: 6px;">Assists</div>
+            </div>
+            <div style="padding: 24px; background: white; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center;">
+                <div style="font-size: 36px; font-weight: bold; color: #8e24aa!important;">@_stats.Rating.ToString("F1")</div>
+                <div style="color: #000 !important; margin-top: 6px;">Gem. Rating</div>
+            </div>
+        </div>
+
+        <h5 style="font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #333!important;">Resultaten</h5>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div style="padding: 20px; background: #e8f5e9; border-radius: 12px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #2e7d32!important;">@_stats.Gewonnen</div>
+                <div style="color: #388e3c!important; margin-top: 6px; font-weight: 600;">Gewonnen</div>
+            </div>
+            <div style="padding: 20px; background: #fff3e0; border-radius: 12px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #e65100!important;">@_stats.Gelijk</div>
+                <div style="color: #f57c00!important; margin-top: 6px; font-weight: 600;">Gelijk</div>
+            </div>
+            <div style="padding: 20px; background: #ffebee; border-radius: 12px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: #c62828!important;">@_stats.Verloren</div>
+                <div style="color: #d32f2f!important; margin-top: 6px; font-weight: 600;">Verloren</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private SeizoenStatsDto? _stats;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LaadStats();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LaadStats()
+    {
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+        int spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+        _stats = await Http.GetFromJsonAsync<SeizoenStatsDto>($"api/Seizoen/stats?spelerId={spelerId}");
+    }
+
+    public class SeizoenStatsDto
+    {
+        public int Wedstrijden { get; set; }
+        public int Goals { get; set; }
+        public int Assists { get; set; }
+        public decimal Rating { get; set; }
+        public int Gewonnen { get; set; }
+        public int Gelijk { get; set; }
+        public int Verloren { get; set; }
+    }
+}

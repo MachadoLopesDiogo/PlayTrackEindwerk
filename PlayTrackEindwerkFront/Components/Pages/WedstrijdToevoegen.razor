@@ -1,0 +1,107 @@
+﻿@page "/wedstrijd/toevoegen"
+@inject HttpClient Http
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Wedstrijd Toevoegen</PageTitle>
+<style>
+    label {
+        color: #000 !important;
+    }
+</style>
+
+<div style="max-width: 700px; margin: 0 auto; padding: 40px 20px;">
+    <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 24px;">➕ Wedstrijd Toevoegen</h3>
+    <h5 style="margin-bottom: 12px; color: #000 !important;">Wedstrijdinfo</h5>
+    <div class="mb-3">
+        <label>Datum:</label>
+        <input type="string" class="form-control" @bind="_datum" style=" color: #000 !important" />
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; color: #000 !important">
+        <div class="mb-3"><label>Thuisteam:</label><input type="text" class="form-control" placeholder="Thuisteam" @bind="_thuisTeam" /></div>
+        <div class="mb-3"><label>Uitteam:</label><input type="text" class="form-control" placeholder="Uitteam" @bind="_uitTeam" /></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;color: #000 !important">
+        <div class="mb-3"><label>Thuisscore:</label><input type="number" class="form-control" min="0" max="99" @bind="_thuisScore" /></div>
+        <div class="mb-3"><label>Uitscore:</label><input type="number" class="form-control" min="0" max="99" @bind="_uitScore" /></div>
+    </div>
+    <hr style="margin: 24px 0;" />
+    <h5 style="margin-bottom: 12px; color: #000 !important;">Mijn Statistieken</h5>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; color: #000 !important">
+        <div class="mb-3"><label>Goals:</label><input type="number" class="form-control" min="0" @bind="_goals" /></div>
+        <div class="mb-3"><label>Assists:</label><input type="number" class="form-control" min="0" @bind="_assists" /></div>
+        <div class="mb-3"><label>Saves:</label><input type="number" class="form-control" min="0" @bind="_saves" /></div>
+        <div class="mb-3"><label>Goede tackles:</label><input type="number" class="form-control" min="0" @bind="_tackles" /></div>
+        <div class="mb-3"><label>Goede aanvallen:</label><input type="number" class="form-control" min="0" @bind="_aanvallen" /></div>
+        <div class="mb-3"><label>Fouten:</label><input type="number" class="form-control" min="0" @bind="_fouten" /></div>
+        <div class="mb-3"><label>Gele kaarten:</label><input type="number" class="form-control" min="0" @bind="_geel" /></div>
+        <div class="mb-3"><label>Rode kaarten:</label><input type="number" class="form-control" min="0" @bind="_rood" /></div>
+    </div>
+    <button class="btn btn-primary" @onclick="OpslaanWedstrijd">Wedstrijd opslaan</button>
+</div>
+
+@code {
+    record SpelerInfo(int Id, string Voornaam, string Naam, string Positie, string Team);
+    private int _spelerId = 0;
+    private string _datum = DateTime.Today.ToString("yyyy-MM-dd");
+    private string _thuisTeam = "", _uitTeam = "";
+    private int _thuisScore = 0, _uitScore = 0;
+    private int _goals = 0, _assists = 0, _saves = 0, _tackles = 0, _aanvallen = 0, _fouten = 0, _geel = 0, _rood = 0;
+    private string _teamNaam = "";
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        
+        if (firstRender)
+        {
+            var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+            _spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+
+            var spelerResp = await Http.GetFromJsonAsync<SpelerInfo>($"/api/Speler/{_spelerId}");
+            if (spelerResp != null)
+            {
+                _teamNaam = spelerResp.Team ?? "";
+                _thuisTeam = _teamNaam;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpslaanWedstrijd()
+    {
+        // Lees ID opnieuw uit localStorage voor de zekerheid
+        var id = await JS.InvokeAsync<string>("localStorage.getItem", "spelerId");
+        _spelerId = int.TryParse(id, out var parsed) ? parsed : 0;
+
+        
+
+        var request = new
+        {
+            SpelerId = _spelerId,
+            Datum = _datum,
+            ThuisTeam = _thuisTeam,
+            UitTeam = _uitTeam,
+            ThuisScore = _thuisScore,
+            UitScore = _uitScore,
+            IsThuis = true,
+            Goals = _goals,
+            Assists = _assists,
+            Saves = _saves,
+            Tackles = _tackles,
+            Aanvallen = _aanvallen,
+            Fouten = _fouten,
+            Geel = _geel,
+            Rood = _rood,
+            Competitie = (string?)null
+        };
+
+        var response = await Http.PostAsJsonAsync("api/Wedstrijd", request);
+        if (response.IsSuccessStatusCode) Navigation.NavigateTo("/wedstrijd");
+        else await JS.InvokeVoidAsync("alert", $"Fout: {await response.Content.ReadAsStringAsync()}");
+    }
+
+        
+    
+}

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37027.9
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayTrackEindwerk", "PlayTrackEindwerk\PlayTrackEindwerk.csproj", "{954A480D-A7BD-4CDA-B728-74B98EBC5713}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayTrackEindwerkFront", "PlayTrackEindwerkFront\PlayTrackEindwerkFront.csproj", "{680DEFBD-4482-4F8E-9689-8725BBB74C16}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{954A480D-A7BD-4CDA-B728-74B98EBC5713}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{954A480D-A7BD-4CDA-B728-74B98EBC5713}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{954A480D-A7BD-4CDA-B728-74B98EBC5713}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{954A480D-A7BD-4CDA-B728-74B98EBC5713}.Release|Any CPU.Build.0 = Release|Any CPU
+		{680DEFBD-4482-4F8E-9689-8725BBB74C16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{680DEFBD-4482-4F8E-9689-8725BBB74C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{680DEFBD-4482-4F8E-9689-8725BBB74C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{680DEFBD-4482-4F8E-9689-8725BBB74C16}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {218FA81C-7F75-48D3-8FE4-525554764525}
+	EndGlobalSection
+EndGlobal
