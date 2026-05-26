@@ -1,23 +1,73 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank"></a>
+    <header class="topbar">
+        <div class="logo-section">
+            <h1>PlayTrack</h1>
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
+        <nav class="nav-links">
+            <NavLink href="/" class="nav-item">Login</NavLink>
+            <NavLink href="/wedstrijd" class="nav-item">Wedstrijden</NavLink>
+            <NavLink href="/seizoen" class="nav-item">Seizoen</NavLink>
+        </nav>
+
+        <div class="profile-section">
+            @if (!string.IsNullOrEmpty(loggedInNaam))
+            {
+                <span class="profile-box">👤 @loggedInNaam</span>
+            }
+            else
+            {
+                <span class="profile-box">Niet ingelogd</span>
+            }
+        </div>
+    </header>
+
+    <main class="main-content">
+        @Body
     </main>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+@code {
+    @code {
+    private string loggedInNaam = "";
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        await LaadNaam();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LaadNaam();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LaadNaam()
+    {
+        try
+        {
+            var naam = await JS.InvokeAsync<string?>("localStorage.getItem", "spelerNaam");
+            loggedInNaam = naam ?? "";
+        }
+        catch { }
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}
+}
