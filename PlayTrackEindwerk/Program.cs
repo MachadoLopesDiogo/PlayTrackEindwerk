@@ -196,7 +196,13 @@ app.MapPost("/api/Wedstrijd", async (WedstrijdRequest req, Voetbaldb db) =>
         AantalGrofFouten = req.Fouten,
         AantalBelangrijkeActies = req.Aanvallen,
         AantalBelangrijkeTackles = req.Tackles,
-        RatingOp10 = (int)BerekenRating(req.Goals, req.Assists, req.Tackles, req.Aanvallen, req.Fouten, req.Geel, req.Rood, req.Gewonnen)
+
+       
+
+
+        RatingOp10 = (int)BerekenRating(req.Goals, req.Assists, req.Tackles, req.Aanvallen, req.Fouten, req.Geel, req.Rood, req.Gewonnen,req.Saves)
+
+
     });
     await db.SaveChangesAsync();
     return Results.Ok(new { Success = true });
