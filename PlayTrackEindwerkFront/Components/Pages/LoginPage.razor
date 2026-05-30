@@ -109,8 +109,12 @@
             {
                 var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
                 await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
+<<<<<<< Updated upstream
                 await JS.InvokeVoidAsync("localStorage.setItem", "spelerNaam", speler.Voornaam + " " + speler.Achternaam); // ← toevoegen
                 Nav.NavigateTo("/wedstrijd");
+=======
+                Nav.NavigateTo("/wedstrijd", forceLoad: true);
+>>>>>>> Stashed changes
             }
             else fout = true;
         }

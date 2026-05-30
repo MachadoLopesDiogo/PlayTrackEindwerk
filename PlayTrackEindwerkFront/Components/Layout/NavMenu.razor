@@ -2,6 +2,7 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
+
 <div class="top-row" style="display: flex; justify-content: flex-end; align-items: center; padding: 8px 16px; background: #1a5c2a;">
     @if (!string.IsNullOrEmpty(loggedInNaam))
     {
@@ -13,6 +14,20 @@
 </div>
 
 <div class="sidebar-wrapper">
+
+<div class="sidebar-wrapper">
+
+    <!-- Ingelogde gebruiker -->
+    @if (!string.IsNullOrEmpty(loggedInNaam))
+    {
+        <div class="sidebar-user">
+            <span class="user-name">👤 @loggedInNaam</span>
+            <button @onclick="Logout" class="logout-btn">Uitloggen</button>
+        </div>
+    }
+
+    <!-- Logo sectie -->
+>>>>>>> Stashed changes
     <div class="sidebar-logo">
         <div class="logo-circle">⚽</div>
         <div class="logo-text">
@@ -45,14 +60,19 @@
             </div>
         </nav>
     </div>
+<<<<<<< Updated upstream
     <div class="sidebar-footer">
         <span>v1.0 • PlayTrack</span>
     </div>
+=======
+
+>>>>>>> Stashed changes
 </div>
 
 @code {
     private string loggedInNaam = "";
 
+<<<<<<< Updated upstream
     protected override void OnInitialized()
     {
         Navigation.LocationChanged += OnLocationChanged;
@@ -64,10 +84,13 @@
         await InvokeAsync(StateHasChanged);
     }
 
+=======
+>>>>>>> Stashed changes
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+<<<<<<< Updated upstream
             await LaadNaam();
             StateHasChanged();
         }
@@ -83,17 +106,33 @@
         catch { }
     }
 
+=======
+            try
+            {
+                var naam = await JS.InvokeAsync<string?>("localStorage.getItem", "spelerNaam");
+                loggedInNaam = naam ?? "";
+                StateHasChanged();
+            }
+            catch { }
+        }
+    }
+
+>>>>>>> Stashed changes
     private async Task Logout()
     {
         await JS.InvokeVoidAsync("localStorage.removeItem", "spelerId");
         await JS.InvokeVoidAsync("localStorage.removeItem", "spelerNaam");
         loggedInNaam = "";
         StateHasChanged();
+<<<<<<< Updated upstream
         Navigation.NavigateTo("/login", forceLoad: false);
     }
 
     public void Dispose()
     {
         Navigation.LocationChanged -= OnLocationChanged;
+=======
+        Navigation.NavigateTo("/", forceLoad: true);
+>>>>>>> Stashed changes
     }
 }

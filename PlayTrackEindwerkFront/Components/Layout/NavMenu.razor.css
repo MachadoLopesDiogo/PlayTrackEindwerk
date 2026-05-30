@@ -8,7 +8,6 @@
     overflow: hidden;
 }
 
-    /* Decoratief groen gloed effect bovenaan */
     .sidebar-wrapper::before {
         content: '';
         position: absolute;
@@ -20,13 +19,48 @@
         pointer-events: none;
     }
 
-/* Logo sectie */
+.sidebar-user {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 20px;
+    align-items: flex-start;
+}
+
+.user-name {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.1);
+    padding: 5px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.logout-btn {
+    background: rgba(255, 80, 80, 0.7);
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+    .logout-btn:hover {
+        background: rgba(255, 80, 80, 1);
+    }
+
 .sidebar-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 108px 20px 20px;
-    color:white
+    padding: 20px 20px 20px;
+    color: white;
 }
 
 .logo-circle {
@@ -62,14 +96,12 @@
     text-transform: uppercase;
 }
 
-/* Divider */
 .sidebar-divider {
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
     margin: 0 16px 16px;
 }
 
-/* Nav label */
 .nav-label {
     color: rgba(255,255,255,0.3);
     font-size: 0.65rem;
@@ -79,7 +111,6 @@
     text-transform: uppercase;
 }
 
-/* Toggler (mobiel) */
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
@@ -98,7 +129,6 @@
         background-color: rgba(255,255,255,0.15);
     }
 
-/* Nav items */
 .nav-scrollable {
     display: none;
     flex: 1;
@@ -151,16 +181,6 @@
     font-weight: 500;
 }
 
-/* Footer */
-.sidebar-footer {
-    padding: 16px 20px;
-    color: rgba(255,255,255,0.2);
-    font-size: 0.7rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    margin-top: auto;
-}
-
-/* Desktop */
 @media (min-width: 641px) {
     .navbar-toggler {
         display: none;
