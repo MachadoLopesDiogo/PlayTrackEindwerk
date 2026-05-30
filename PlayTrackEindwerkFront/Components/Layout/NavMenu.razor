@@ -1,4 +1,18 @@
-﻿<div class="sidebar-wrapper">
+﻿@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="sidebar-wrapper">
+
+    <!-- Ingelogde gebruiker -->
+    @if (!string.IsNullOrEmpty(loggedInNaam))
+    {
+        <div class="sidebar-user">
+            <span class="user-name">👤 @loggedInNaam</span>
+            <button @onclick="Logout" class="logout-btn">Uitloggen</button>
+        </div>
+    }
+
     <!-- Logo sectie -->
     <div class="sidebar-logo">
         <div class="logo-circle">⚽</div>
@@ -38,8 +52,32 @@
         </nav>
     </div>
 
-   
-    <div class="sidebar-footer">
-        <span>v1.0 · PlayTrack</span>
-    </div>
 </div>
+
+@code {
+    private string loggedInNaam = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await Task.Delay(100);
+                var naam = await JS.InvokeAsync<string?>("localStorage.getItem", "spelerNaam");
+                loggedInNaam = naam ?? "";
+                StateHasChanged();
+            }
+            catch { }
+        }
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "spelerId");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "spelerNaam");
+        loggedInNaam = "";
+        StateHasChanged();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

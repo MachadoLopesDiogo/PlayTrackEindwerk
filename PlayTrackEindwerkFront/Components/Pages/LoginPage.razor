@@ -56,10 +56,22 @@
                 <select @bind="regPositie" class="form-input">
                     <option value="">-- Kies positie --</option>
                     <option value="GK">Doelman (GK)</option>
-                    <option value="DEF">Verdediger (DEF)</option>
-                    <option value="MID">Middenvelder (MID)</option>
-                    <option value="CMD">Centrale Middenvelder (CMD)</option>
-                    <option value="ATT">Aanvaller (ATT)</option>
+                    <option value="SW">Sweeper (SW)</option>
+                    <option value="LB">Linksback (LB)</option>
+                    <option value="RB">Rechtsback (RB)</option>
+                    <option value="CB">Centrale Verdediger (CB)</option>
+                    <option value="LWB">Linker Wingback (LWB)</option>
+                    <option value="RWB">Rechter Wingback (RWB)</option>
+                    <option value="DM">Defensieve Middenvelder (DM)</option>
+                    <option value="CM">Centrale Middenvelder (CM)</option>
+                    <option value="LM">Linker Middenvelder (LM)</option>
+                    <option value="RM">Rechter Middenvelder (RM)</option>
+                    <option value="AM">Aanvallende Middenvelder (AM)</option>
+                    <option value="LW">Linker Vleugelspeler (LW)</option>
+                    <option value="RW">Rechter Vleugelspeler (RW)</option>
+                    <option value="SS">Schaduwspits (SS)</option>
+                    <option value="CF">Aanvaller (CF)</option>
+                    <option value="ST">Spits (ST)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -102,7 +114,8 @@
             {
                 var speler = await response.Content.ReadFromJsonAsync<SpelerResult>();
                 await JS.InvokeVoidAsync("localStorage.setItem", "spelerId", speler!.Id.ToString());
-                Nav.NavigateTo("/wedstrijd");
+                await JS.InvokeVoidAsync("localStorage.setItem", "spelerNaam", speler!.Voornaam + " " + speler!.Achternaam); // ← dit toevoegen
+                Nav.NavigateTo("/wedstrijd", forceLoad: true); // ← forceLoad: true
             }
             else fout = true;
         }

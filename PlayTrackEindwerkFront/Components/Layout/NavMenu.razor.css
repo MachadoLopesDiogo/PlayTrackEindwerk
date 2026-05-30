@@ -8,7 +8,6 @@
     overflow: hidden;
 }
 
-    /* Decoratief groen gloed effect bovenaan */
     .sidebar-wrapper::before {
         content: '';
         position: absolute;
@@ -20,13 +19,50 @@
         pointer-events: none;
     }
 
+/* Ingelogde gebruiker */
+.sidebar-user {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 20px 8px;
+    align-items: flex-start;
+}
+
+.user-name {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.8rem;
+    background: rgba(255,255,255,0.1);
+    padding: 5px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.logout-btn {
+    background: Red;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    width: 65%;
+    transition: background 0.2s;
+}
+
+    .logout-btn:hover {
+        background: Red;
+    }
+
 /* Logo sectie */
 .sidebar-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 108px 20px 20px;
-    color:white
+    padding: 20px 20px 20px;
+    color: white;
 }
 
 .logo-circle {
