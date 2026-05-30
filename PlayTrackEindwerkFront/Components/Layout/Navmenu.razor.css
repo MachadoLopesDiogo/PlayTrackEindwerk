@@ -1,0 +1,175 @@
+﻿.sidebar-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: linear-gradient(180deg, #1a4d2e 0%, #0d2b18 100%);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Decoratief groen gloed effect bovenaan */
+    .sidebar-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        left: -60px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(74,197,94,0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+/* Logo sectie */
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 108px 20px 20px;
+    color: white
+}
+
+.logo-circle {
+    width: 46px;
+    height: 46px;
+    background: linear-gradient(135deg, #2d7a3e, #4ac55e);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 12px rgba(74,197,94,0.3);
+    flex-shrink: 0;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-title {
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+.logo-sub {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Divider */
+.sidebar-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    margin: 0 16px 16px;
+}
+
+/* Nav label */
+.nav-label {
+    color: rgba(255,255,255,0.3);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    padding: 0 24px 10px;
+    text-transform: uppercase;
+}
+
+/* Toggler (mobiel) */
+.navbar-toggler {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") no-repeat center/1.75rem transparent;
+}
+
+    .navbar-toggler:checked {
+        background-color: rgba(255,255,255,0.15);
+    }
+
+/* Nav items */
+.nav-scrollable {
+    display: none;
+    flex: 1;
+    padding: 0 12px;
+}
+
+.navbar-toggler:checked ~ .nav-scrollable {
+    display: block;
+}
+
+.nav-item {
+    margin-bottom: 4px;
+}
+
+    .nav-item ::deep .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border-radius: 10px;
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+        .nav-item ::deep .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.08);
+        }
+
+    .nav-item ::deep a.active {
+        background: linear-gradient(135deg, rgba(74,197,94,0.25), rgba(45,122,62,0.2));
+        color: #ffffff;
+        border-color: rgba(74,197,94,0.35);
+        box-shadow: 0 2px 8px rgba(74,197,94,0.15);
+    }
+
+.nav-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.nav-text {
+    font-weight: 500;
+}
+
+/* Footer */
+.sidebar-footer {
+    padding: 16px 20px;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.7rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin-top: auto;
+}
+
+/* Desktop */
+@media (min-width: 641px) {
+    .navbar-toggler {
+        display: none;
+    }
+
+    .nav-scrollable {
+        display: flex !important;
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+}
